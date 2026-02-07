@@ -11,7 +11,7 @@ from google.cloud import bigquery
 from . import config
 from .aggregate import aggregate_to_json
 from .query import run_query
-from .upload import upload_to_r2
+from .upload import download_from_r2, upload_to_r2
 
 
 def load_countries() -> dict[str, str]:
@@ -88,6 +88,12 @@ def main() -> None:
     if mode == "incremental":
         print("[3/5] Loading existing data for merge...")
         existing = load_existing_data(output_path)
+        if existing is None:
+            print("  No local data found, trying R2...")
+            if download_from_r2(output_path):
+                existing = load_existing_data(output_path)
+        if existing is None:
+            print("  No existing data available — incremental will produce partial results")
     else:
         print("[3/5] Full mode, skipping existing data")
 
