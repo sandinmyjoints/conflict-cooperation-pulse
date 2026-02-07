@@ -3,10 +3,13 @@
 import os
 from datetime import datetime, timedelta
 
-# BigQuery
-BQ_PROJECT = os.environ.get("BQ_PROJECT", "gdelt-bq")
+# BigQuery — data source (public GDELT dataset)
+BQ_DATA_PROJECT = "gdelt-bq"
 BQ_DATASET = "gdeltv2"
-BQ_TABLE = f"{BQ_PROJECT}.{BQ_DATASET}.events_partitioned"
+BQ_TABLE = f"{BQ_DATA_PROJECT}.{BQ_DATASET}.events_partitioned"
+
+# BigQuery — billing project (your own GCP project)
+GCP_PROJECT = os.environ.get("GCP_PROJECT", "")
 
 # Pipeline
 TOP_PAIRS = 100
