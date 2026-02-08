@@ -17,18 +17,23 @@ export function useFilteredData(data: PulseData | null): UseFilteredDataResult {
   const [countryQuery, setCountryQuery] = useState("");
   const [timeRange, setTimeRange] = useState<[string, string] | null>(null);
 
-  const rankedConflictual = useMemo(
-    () => (data ? getRankedPairs(data, "most_conflictual") : []),
-    [data]
-  );
-  const rankedCooperative = useMemo(
-    () => (data ? getRankedPairs(data, "most_cooperative") : []),
-    [data]
-  );
-  const rankedShifts = useMemo(
-    () => (data ? getRankedPairs(data, "biggest_shifts") : []),
-    [data]
-  );
+  const rankedConflictual = useMemo(() => {
+    if (!data) return [];
+    const pairs = getRankedPairs(data, "most_conflictual");
+    return countryQuery ? filterByCountry(pairs, countryQuery) : pairs;
+  }, [data, countryQuery]);
+
+  const rankedCooperative = useMemo(() => {
+    if (!data) return [];
+    const pairs = getRankedPairs(data, "most_cooperative");
+    return countryQuery ? filterByCountry(pairs, countryQuery) : pairs;
+  }, [data, countryQuery]);
+
+  const rankedShifts = useMemo(() => {
+    if (!data) return [];
+    const pairs = getRankedPairs(data, "biggest_shifts");
+    return countryQuery ? filterByCountry(pairs, countryQuery) : pairs;
+  }, [data, countryQuery]);
 
   const filteredPairs = useMemo(() => {
     if (!data) return [];
