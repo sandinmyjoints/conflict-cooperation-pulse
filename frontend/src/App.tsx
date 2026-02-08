@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { PairData } from "./types";
 import { useEventData } from "./hooks/useEventData";
 import { useFilteredData } from "./hooks/useFilteredData";
@@ -23,7 +23,13 @@ export default function App() {
     filteredPairs,
   } = useFilteredData(data);
 
-  const [selectedPair, setSelectedPair] = useState<PairData | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  // Derive the selected pair from filteredPairs so it reacts to filter changes
+  const selectedPair = useMemo(() => {
+    if (!selectedKey) return null;
+    return filteredPairs.find((p) => pairKey(p) === selectedKey) ?? null;
+  }, [selectedKey, filteredPairs]);
 
   if (loading || error) {
     return <LoadingState error={error} />;
@@ -32,16 +38,9 @@ export default function App() {
   if (!data) return null;
 
   const handleSelect = (pair: PairData) => {
-    if (selectedPair && pairKey(selectedPair) === pairKey(pair)) {
-      setSelectedPair(null);
-    } else {
-      // Use the filtered version if available
-      const filtered = filteredPairs.find((p) => pairKey(p) === pairKey(pair));
-      setSelectedPair(filtered ?? pair);
-    }
+    const key = pairKey(pair);
+    setSelectedKey(selectedKey === key ? null : key);
   };
-
-  const selectedKey = selectedPair ? pairKey(selectedPair) : null;
 
   return (
     <div className="app">
@@ -62,7 +61,7 @@ export default function App() {
         onTimeRangeChange={setTimeRange}
       />
       {selectedPair && (
-        <DetailView pair={selectedPair} onClose={() => setSelectedPair(null)} />
+        <DetailView pair={selectedPair} onClose={() => setSelectedKey(null)} />
       )}
     </div>
   );

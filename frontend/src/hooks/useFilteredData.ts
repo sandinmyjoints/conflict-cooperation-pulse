@@ -17,35 +17,38 @@ export function useFilteredData(data: PulseData | null): UseFilteredDataResult {
   const [countryQuery, setCountryQuery] = useState("");
   const [timeRange, setTimeRange] = useState<[string, string] | null>(null);
 
+  const applyFilters = useMemo(() => {
+    return (pairs: PairData[]) => {
+      let result = pairs;
+      if (countryQuery) {
+        result = filterByCountry(result, countryQuery);
+      }
+      if (timeRange) {
+        result = result.map((p) => sliceWeekData(p, timeRange[0], timeRange[1]));
+      }
+      return result;
+    };
+  }, [countryQuery, timeRange]);
+
   const rankedConflictual = useMemo(() => {
     if (!data) return [];
-    const pairs = getRankedPairs(data, "most_conflictual");
-    return countryQuery ? filterByCountry(pairs, countryQuery) : pairs;
-  }, [data, countryQuery]);
+    return applyFilters(getRankedPairs(data, "most_conflictual"));
+  }, [data, applyFilters]);
 
   const rankedCooperative = useMemo(() => {
     if (!data) return [];
-    const pairs = getRankedPairs(data, "most_cooperative");
-    return countryQuery ? filterByCountry(pairs, countryQuery) : pairs;
-  }, [data, countryQuery]);
+    return applyFilters(getRankedPairs(data, "most_cooperative"));
+  }, [data, applyFilters]);
 
   const rankedShifts = useMemo(() => {
     if (!data) return [];
-    const pairs = getRankedPairs(data, "biggest_shifts");
-    return countryQuery ? filterByCountry(pairs, countryQuery) : pairs;
-  }, [data, countryQuery]);
+    return applyFilters(getRankedPairs(data, "biggest_shifts"));
+  }, [data, applyFilters]);
 
   const filteredPairs = useMemo(() => {
     if (!data) return [];
-    let pairs = data.pairs;
-    if (countryQuery) {
-      pairs = filterByCountry(pairs, countryQuery);
-    }
-    if (timeRange) {
-      pairs = pairs.map((p) => sliceWeekData(p, timeRange[0], timeRange[1]));
-    }
-    return pairs;
-  }, [data, countryQuery, timeRange]);
+    return applyFilters(data.pairs);
+  }, [data, applyFilters]);
 
   return {
     countryQuery,
